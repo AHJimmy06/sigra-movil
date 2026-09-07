@@ -1,5 +1,16 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import type { Announcement, Pass, Ticket } from '@/types/models';
+import type { Announcement, Pass, ServerTicket, Ticket, TicketStatus } from '@/types/models';
+
+type ServerTicketRow = {
+  id: string;
+  client_request_id: string;
+  resident_id: string;
+  description: string;
+  image_name: string;
+  status: TicketStatus;
+  created_at: string;
+  updated_at: string;
+};
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(`
@@ -8,6 +19,7 @@ export async function migrateDatabase(db: SQLiteDatabase) {
     CREATE TABLE IF NOT EXISTS announcements (id TEXT PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL, published_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS passes (id TEXT PRIMARY KEY, resident_id TEXT NOT NULL, valid_until TEXT NOT NULL, revoked_at TEXT, created_at TEXT NOT NULL, synced_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS tickets (client_request_id TEXT PRIMARY KEY, description TEXT NOT NULL, image_uri TEXT NOT NULL, image_type TEXT NOT NULL, state TEXT NOT NULL, server_id TEXT, error TEXT, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS server_tickets (id TEXT PRIMARY KEY, client_request_id TEXT NOT NULL UNIQUE, resident_id TEXT NOT NULL, description TEXT NOT NULL, image_name TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS directory (id TEXT PRIMARY KEY, kind TEXT NOT NULL, title TEXT NOT NULL, detail TEXT NOT NULL, phone TEXT);
     INSERT OR IGNORE INTO directory VALUES
       ('emergency', 'contact', 'Emergency services', 'Police, fire, or medical emergency', '911'),
@@ -52,14 +64,41 @@ export async function insertTicket(db: SQLiteDatabase, ticket: Ticket) {
   await db.runAsync('INSERT INTO tickets VALUES (?, ?, ?, ?, ?, ?, ?, ?)', ticket.clientRequestId, ticket.description, ticket.imageUri, ticket.imageType, ticket.state, ticket.serverId, ticket.error, ticket.createdAt);
 }
 
-export async function getTickets(db: SQLiteDatabase) {
+async function getLocalTickets(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<{ client_request_id: string; description: string; image_uri: string; image_type: string; state: Ticket['state']; server_id: string | null; error: string | null; created_at: string }>('SELECT * FROM tickets ORDER BY created_at DESC');
-  return rows.map((row) => ({ clientRequestId: row.client_request_id, description: row.description, imageUri: row.image_uri, imageType: row.image_type, state: row.state, serverId: row.server_id, error: row.error, createdAt: row.created_at }));
+  return rows.map((row) => ({ clientRequestId: row.client_request_id, description: row.description, imageUri: row.image_uri, imageType: row.image_type, state: row.state, serverId: row.server_id, serverStatus: null, error: row.error, createdAt: row.created_at }));
+}
+
+export async function getTickets(db: SQLiteDatabase) {
+  const local = await getLocalTickets(db);
+  const server = await db.getAllAsync<ServerTicketRow>('SELECT * FROM server_tickets ORDER BY created_at DESC');
+  return mergeTicketCaches(local, server.map((row) => ({ id: row.id, clientRequestId: row.client_request_id, residentId: row.resident_id, description: row.description, imageName: row.image_name, status: row.status, createdAt: row.created_at, updatedAt: row.updated_at })));
+}
+
+export function mergeTicketCaches(local: Ticket[], server: ServerTicket[]) {
+  const remoteByRequest = new Map(server.map((ticket) => [ticket.clientRequestId, ticket]));
+  const merged = local.map((ticket) => {
+    const remote = remoteByRequest.get(ticket.clientRequestId);
+    if (!remote) return ticket;
+    remoteByRequest.delete(ticket.clientRequestId);
+    return { ...ticket, serverId: remote.id, serverStatus: remote.status };
+  });
+  for (const remote of remoteByRequest.values())
+    merged.push({ clientRequestId: remote.clientRequestId, description: remote.description, imageUri: '', imageType: '', state: 'synced', serverId: remote.id, serverStatus: remote.status, error: null, createdAt: remote.createdAt });
+  return merged.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+export async function replaceServerTickets(db: SQLiteDatabase, values: ServerTicket[]) {
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM server_tickets');
+    for (const value of values)
+      await db.runAsync('INSERT INTO server_tickets VALUES (?, ?, ?, ?, ?, ?, ?, ?)', value.id, value.clientRequestId, value.residentId, value.description, value.imageName, value.status, value.createdAt, value.updatedAt);
+  });
 }
 
 export async function clearResidentData(db: SQLiteDatabase) {
   const passes = await getPasses(db);
-  const tickets = await getTickets(db);
-  await db.execAsync('DELETE FROM passes; DELETE FROM tickets;');
+  const tickets = await getLocalTickets(db);
+  await db.execAsync('DELETE FROM passes; DELETE FROM tickets; DELETE FROM server_tickets;');
   return { passes, tickets };
 }

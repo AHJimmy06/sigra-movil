@@ -1,4 +1,4 @@
-import type { Announcement, Pass, Provisioning, ResidentUser } from '@/types/models';
+import type { Announcement, Pass, Provisioning, ResidentUser, ServerTicket } from '@/types/models';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
 
@@ -50,6 +50,7 @@ export const api = {
     request<void>(`/access/passes/${id}/revoke`, token, { method: 'POST' }),
   provisionPass: (token: string, id: string) =>
     request<Provisioning>(`/access/passes/${id}/provision`, token),
+  tickets: (token: string) => request<ServerTicket[]>('/tickets', token),
   createTicket: (token: string, form: FormData) =>
     request<{ id: string }>('/tickets', token, { method: 'POST', body: form }),
 };

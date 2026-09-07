@@ -22,6 +22,17 @@ export type Pass = {
 };
 
 export type TicketState = 'pending' | 'syncing' | 'failed' | 'synced';
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+export type ServerTicket = {
+  id: string;
+  clientRequestId: string;
+  residentId: string;
+  description: string;
+  imageName: string;
+  status: TicketStatus;
+  createdAt: string;
+  updatedAt: string;
+};
 export type Ticket = {
   clientRequestId: string;
   description: string;
@@ -29,6 +40,7 @@ export type Ticket = {
   imageType: string;
   state: TicketState;
   serverId: string | null;
+  serverStatus: TicketStatus | null;
   error: string | null;
   createdAt: string;
 };

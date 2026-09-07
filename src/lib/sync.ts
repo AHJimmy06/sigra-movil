@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { ApiError, api } from './api';
-import { getTickets, replaceAnnouncements, replacePasses } from './db';
+import { getTickets, replaceAnnouncements, replacePasses, replaceServerTickets } from './db';
 import { preferences } from './preferences';
 import { shouldSyncTicket } from './queue';
 import { logout } from './logout';
@@ -43,6 +43,7 @@ async function runSync(db: SQLiteDatabase, token: string) {
         await db.runAsync("UPDATE tickets SET state='failed', error=? WHERE client_request_id=?", message, ticket.clientRequestId);
       }
     }
+    await replaceServerTickets(db, await api.tickets(token));
     const now = new Date().toISOString();
     preferences.setLastSync(now);
     useSyncState.getState().complete(now);
