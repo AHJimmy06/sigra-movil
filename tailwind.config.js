@@ -5,9 +5,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: '#155E75',
-        ink: '#172033',
-        canvas: '#F6F8FB',
+        brand: '#0F766E',
+        ink: '#0F172A',
+        canvas: '#F2F2F7',
+        obsidian: '#0B1120',
       },
     },
   },
