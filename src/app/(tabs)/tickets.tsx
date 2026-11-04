@@ -271,7 +271,6 @@ export default function TicketsScreen() {
                 accessibilityLabel="Quitar fotografía seleccionada"
                 onPress={() => setPhoto(null)}
                 className="flex-row items-center gap-1 rounded-lg px-2 py-1"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
               >
                 <TrashIcon size={14} color="#EF4444" />
                 <Text className="text-xs font-semibold text-rose-600">

@@ -74,7 +74,6 @@ export default function LoginScreen() {
               accessibilityLabel="Autocompletar cuenta demo de residente"
               onPress={fillDemoResident}
               className="rounded-full bg-slate-100 px-3 py-1.5"
-              style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
             >
               <Text className="text-xs font-semibold text-brand">
                 Usar cuenta demo

@@ -315,10 +315,7 @@ export function SyncIsland({
       disabled={!onPress || !connected || syncing}
       onPress={onPress}
       className="self-center flex-row items-center gap-2.5 rounded-full bg-obsidian px-4 py-2 shadow-sm"
-      style={({ pressed }) => ({
-        minHeight: 36,
-        opacity: pressed ? 0.8 : 1,
-      })}
+      style={{ minHeight: 36 }}
     >
       <View
         className="h-2.5 w-2.5 rounded-full"
@@ -472,11 +469,12 @@ export function SegmentedControl<T extends string | number>({
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl py-2.5 px-2"
-            style={({ pressed }) => ({
+            style={{
               minHeight: 40,
               backgroundColor: active ? '#FFFFFF' : 'transparent',
-              opacity: pressed ? 0.85 : 1,
-            })}
+              borderWidth: active ? 1 : 0,
+              borderColor: active ? '#CBD5E1' : 'transparent',
+            }}
           >
             <Text
               numberOfLines={1}
@@ -535,13 +533,13 @@ export function Button({
       disabled={disabled}
       onPress={onPress}
       className="flex-row items-center justify-center gap-2 rounded-2xl px-4 py-3.5"
-      style={({ pressed }) => ({
+      style={{
         minHeight: 46,
         backgroundColor: bg,
         borderWidth: tone === 'ghost' ? 1 : 0,
         borderColor: '#CBD5E1',
-        opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
-      })}
+        opacity: disabled ? 0.4 : 1,
+      }}
     >
       {icon}
       <Text

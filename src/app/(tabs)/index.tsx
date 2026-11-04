@@ -91,10 +91,7 @@ export default function HomeScreen() {
           accessibilityLabel="Ir a Billetera de Pases QR"
           onPress={() => router.push('/(tabs)/passes')}
           className="flex-1 justify-between rounded-3xl border border-slate-800 bg-obsidian p-4"
-          style={({ pressed }) => ({
-            minHeight: 118,
-            opacity: pressed ? 0.85 : 1,
-          })}
+          style={{ minHeight: 118 }}
         >
           <View className="flex-row items-center justify-between">
             <View className="rounded-xl bg-slate-800 p-2">
@@ -120,10 +117,7 @@ export default function HomeScreen() {
           accessibilityLabel="Ir a Incidencias y Mantenimiento"
           onPress={() => router.push('/(tabs)/tickets')}
           className="flex-1 justify-between rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm"
-          style={({ pressed }) => ({
-            minHeight: 118,
-            opacity: pressed ? 0.85 : 1,
-          })}
+          style={{ minHeight: 118 }}
         >
           <View className="flex-row items-center justify-between">
             <View className="rounded-xl bg-teal-50 p-2">
@@ -169,10 +163,7 @@ export default function HomeScreen() {
             disabled={!sync.connected || sync.syncing}
             onPress={refresh}
             className="flex-row items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5"
-            style={({ pressed }) => ({
-              opacity:
-                !sync.connected || sync.syncing ? 0.4 : pressed ? 0.75 : 1,
-            })}
+            style={{ opacity: !sync.connected || sync.syncing ? 0.4 : 1 }}
           >
             <SyncIcon size={14} color="#0F766E" />
             <Text className="text-xs font-semibold text-brand">Actualizar</Text>
