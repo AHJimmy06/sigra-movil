@@ -26,14 +26,16 @@ async function syncAnnouncementsIncremental(db: SQLiteDatabase, token: string) {
     if (feed.items && feed.items.length > 0) {
       await applyAnnouncementFeed(db, feed.items);
     }
-    const nextCheckpoint = feed.checkpoint ?? feed.nextCursor;
-    if (nextCheckpoint) {
-      preferences.setAnnouncementCursor(nextCheckpoint);
-      cursor = nextCheckpoint;
+    if (feed.hasMore && feed.nextCursor) {
+      preferences.setAnnouncementCursor(feed.nextCursor);
+      cursor = feed.nextCursor;
+      continue;
     }
-    if (!feed.hasMore || !feed.nextCursor) {
-      break;
+    const finalCheckpoint = feed.checkpoint ?? feed.nextCursor;
+    if (finalCheckpoint) {
+      preferences.setAnnouncementCursor(finalCheckpoint);
     }
+    break;
   }
 }
 

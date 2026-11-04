@@ -58,6 +58,12 @@ const PRIORITY_META: Record<TicketPriority, { label: string; tone: BadgeTone }> 
   URGENT: { label: 'Urgente', tone: 'danger' },
 };
 
+const ACTOR_LABELS: Record<string, string> = {
+  ADMIN: 'Administración',
+  RESIDENT: 'Residente',
+  GUARD: 'Guardia',
+};
+
 export default function TicketsScreen() {
   const db = useSQLiteContext();
   const token = useSession((state) => state.token)!;
@@ -396,16 +402,26 @@ export default function TicketsScreen() {
                           <Text className="text-xs font-bold text-ink">
                             Historial de estados
                           </Text>
-                          {(detail?.history ?? detail?.auditTrail ?? []).map((entry, idx) => (
-                            <Text
-                              key={entry.id ?? String(idx)}
-                              className="text-xs text-slate-600"
-                            >
-                              • {entry.to ?? entry.nextStatus ?? entry.status}
-                              {entry.actorName ? ` (${entry.actorName})` : ''} —{' '}
-                              {new Date(entry.createdAt).toLocaleString('es-EC')}
-                            </Text>
-                          ))}
+                          {(detail?.history ?? detail?.auditTrail ?? []).map((entry, idx) => {
+                            const rawStatus = entry.to ?? entry.nextStatus ?? entry.status;
+                            const statusLabel =
+                              rawStatus && rawStatus in STATUS_META
+                                ? STATUS_META[rawStatus as TicketStatus].label
+                                : rawStatus;
+                            const actorLabel = entry.actorName
+                              ? (ACTOR_LABELS[entry.actorName] ?? entry.actorName)
+                              : null;
+                            return (
+                              <Text
+                                key={entry.id ?? String(idx)}
+                                className="text-xs text-slate-600"
+                              >
+                                • {statusLabel}
+                                {actorLabel ? ` (${actorLabel})` : ''} —{' '}
+                                {new Date(entry.createdAt).toLocaleString('es-EC')}
+                              </Text>
+                            );
+                          })}
                         </View>
                       ) : null}
                     </View>

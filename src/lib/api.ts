@@ -1,5 +1,4 @@
 import type {
-  Announcement,
   PaginatedTicketsResponse,
   Pass,
   PassQrResponse,
@@ -83,7 +82,6 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
-  announcements: (token: string) => request<Announcement[]>('/announcements/published', token),
   residentAnnouncements: async (
     token: string,
     cursor?: string | null,
@@ -91,33 +89,10 @@ export const api = {
   ): Promise<ResidentAnnouncementFeedResponse> => {
     const params = new URLSearchParams({ limit: String(limit) });
     if (cursor) params.set('cursor', cursor);
-    try {
-      return await request<ResidentAnnouncementFeedResponse>(
-        `/resident/announcements?${params.toString()}`,
-        token,
-      );
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        const published = await request<Announcement[]>('/announcements/published', token);
-        const now = new Date().toISOString();
-        return {
-          items: published.map((item) => ({
-            kind: 'UPSERT' as const,
-            announcementId: item.id,
-            title: item.title,
-            body: item.body,
-            publishedAt: item.publishedAt,
-            author: item.authorName ? { name: item.authorName } : null,
-            occurredAt: item.publishedAt,
-          })),
-          checkpoint: null,
-          hasMore: false,
-          nextCursor: null,
-          syncedAt: now,
-        };
-      }
-      throw error;
-    }
+    return request<ResidentAnnouncementFeedResponse>(
+      `/resident/announcements?${params.toString()}`,
+      token,
+    );
   },
   passes: (token: string) => request<Pass[]>('/access/passes', token),
   createPass: (token: string, validDays: number) =>
@@ -132,7 +107,10 @@ export const api = {
   provisionPass: (token: string, id: string) =>
     request<Provisioning>(`/access/passes/${id}/provision`, token),
   tickets: async (token: string): Promise<ServerTicket[]> => {
-    const res = await request<PaginatedTicketsResponse | ServerTicket[]>('/tickets', token);
+    const res = await request<PaginatedTicketsResponse | ServerTicket[]>(
+      '/tickets?page=1&pageSize=100',
+      token,
+    );
     return Array.isArray(res) ? res : (res.items ?? []);
   },
   ticketDetail: (token: string, id: string) => request<ServerTicket>(`/tickets/${id}`, token),
