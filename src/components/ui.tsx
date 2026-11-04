@@ -293,11 +293,7 @@ export function SyncIsland({
   lastSync?: string | null;
   onPress?: () => void;
 }) {
-  const dotColor = syncing
-    ? 'bg-sky-400'
-    : connected
-      ? 'bg-emerald-400'
-      : 'bg-amber-400';
+  const dotHex = syncing ? '#38BDF8' : connected ? '#34D399' : '#FBBF24';
 
   const statusLabel = syncing
     ? 'Sincronizando datos…'
@@ -318,10 +314,16 @@ export function SyncIsland({
       accessibilityLabel={statusLabel}
       disabled={!onPress || !connected || syncing}
       onPress={onPress}
-      className="self-center flex-row items-center gap-2.5 rounded-full bg-obsidian px-4 py-2 shadow-sm active:opacity-80"
-      style={{ minHeight: 36 }}
+      className="self-center flex-row items-center gap-2.5 rounded-full bg-obsidian px-4 py-2 shadow-sm"
+      style={({ pressed }) => ({
+        minHeight: 36,
+        opacity: pressed ? 0.8 : 1,
+      })}
     >
-      <View className={`h-2.5 w-2.5 rounded-full ${dotColor}`} />
+      <View
+        className="h-2.5 w-2.5 rounded-full"
+        style={{ backgroundColor: dotHex }}
+      />
       <Text className="text-xs font-semibold tracking-tight text-white">
         {statusLabel}
       </Text>
@@ -429,26 +431,23 @@ export function Badge({
   label: string;
   tone?: BadgeTone;
 }) {
-  const styles: Record<BadgeTone, { container: string; text: string }> = {
-    neutral: { container: 'bg-slate-100 border-slate-200', text: 'text-slate-700' },
-    brand: { container: 'bg-teal-50 border-teal-200', text: 'text-teal-800' },
-    success: {
-      container: 'bg-emerald-50 border-emerald-200',
-      text: 'text-emerald-800',
-    },
-    warning: { container: 'bg-amber-50 border-amber-200', text: 'text-amber-800' },
-    danger: { container: 'bg-rose-50 border-rose-200', text: 'text-rose-800' },
-    dark: {
-      container: 'bg-slate-800/90 border-slate-700',
-      text: 'text-slate-100',
-    },
+  const styles: Record<BadgeTone, { bg: string; border: string; text: string }> = {
+    neutral: { bg: '#F1F5F9', border: '#E2E8F0', text: '#334155' },
+    brand: { bg: '#F0FDFA', border: '#99F6E4', text: '#115E59' },
+    success: { bg: '#ECFDF5', border: '#A7F3D0', text: '#065F46' },
+    warning: { bg: '#FFFBEB', border: '#FDE68A', text: '#92400E' },
+    danger: { bg: '#FFF1F2', border: '#FECDD3', text: '#9F1239' },
+    dark: { bg: '#1E293B', border: '#334155', text: '#F1F5F9' },
   };
   const current = styles[tone];
   return (
     <View
-      className={`self-start rounded-full border px-2.5 py-1 ${current.container}`}
+      className="self-start rounded-full border px-2.5 py-1"
+      style={{ backgroundColor: current.bg, borderColor: current.border }}
     >
-      <Text className={`text-xs font-semibold ${current.text}`}>{label}</Text>
+      <Text className="text-xs font-semibold" style={{ color: current.text }}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -472,25 +471,27 @@ export function SegmentedControl<T extends string | number>({
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
-            className={`flex-1 flex-row items-center justify-center gap-1 rounded-xl py-2.5 px-2 ${
-              active ? 'bg-white shadow-sm' : ''
-            }`}
-            style={{ minHeight: 40 }}
+            className="flex-1 flex-row items-center justify-center gap-1 rounded-xl py-2.5 px-2"
+            style={({ pressed }) => ({
+              minHeight: 40,
+              backgroundColor: active ? '#FFFFFF' : 'transparent',
+              opacity: pressed ? 0.85 : 1,
+            })}
           >
             <Text
               numberOfLines={1}
-              className={`text-xs font-semibold ${
-                active ? 'text-ink' : 'text-slate-600'
-              }`}
+              className="text-xs font-semibold"
+              style={{ color: active ? '#0F172A' : '#475569' }}
             >
               {option.label}
             </Text>
             {option.count !== undefined ? (
               <Text
-                className={`text-[11px] font-bold ${
-                  active ? 'text-brand' : 'text-slate-500'
-                }`}
-                style={{ fontVariant: ['tabular-nums'] }}
+                className="text-[11px] font-bold"
+                style={{
+                  color: active ? '#0F766E' : '#64748B',
+                  fontVariant: ['tabular-nums'],
+                }}
               >
                 {option.count}
               </Text>
@@ -517,29 +518,36 @@ export function Button({
   icon?: ReactNode;
   accessibilityLabel?: string;
 }) {
-  const color =
+  const bg =
     tone === 'danger'
-      ? 'bg-rose-600'
+      ? '#E11D48'
       : tone === 'secondary'
-        ? 'bg-slate-200/90'
+        ? '#E2E8F0'
         : tone === 'ghost'
-          ? 'bg-transparent border border-slate-300'
-          : 'bg-brand';
+          ? 'transparent'
+          : '#0F766E';
   const textColor =
-    tone === 'secondary' || tone === 'ghost' ? 'text-ink' : 'text-white';
+    tone === 'secondary' || tone === 'ghost' ? '#0F172A' : '#FFFFFF';
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? title}
       disabled={disabled}
       onPress={onPress}
-      className={`flex-row items-center justify-center gap-2 rounded-2xl px-4 py-3.5 active:opacity-80 ${color} ${
-        disabled ? 'opacity-40' : ''
-      }`}
-      style={{ minHeight: 46 }}
+      className="flex-row items-center justify-center gap-2 rounded-2xl px-4 py-3.5"
+      style={({ pressed }) => ({
+        minHeight: 46,
+        backgroundColor: bg,
+        borderWidth: tone === 'ghost' ? 1 : 0,
+        borderColor: '#CBD5E1',
+        opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
+      })}
     >
       {icon}
-      <Text className={`text-center text-sm font-semibold ${textColor}`}>
+      <Text
+        className="text-center text-sm font-semibold"
+        style={{ color: textColor }}
+      >
         {title}
       </Text>
     </Pressable>
@@ -570,19 +578,23 @@ export function Message({
   children,
   tone = 'info',
 }: PropsWithChildren<{ tone?: 'info' | 'error' | 'success' | 'warning' }>) {
-  const classes =
+  const palette =
     tone === 'error'
-      ? 'border-rose-200 bg-rose-50 text-rose-900'
+      ? { bg: '#FFF1F2', border: '#FECDD3', text: '#881337' }
       : tone === 'success'
-        ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+        ? { bg: '#ECFDF5', border: '#A7F3D0', text: '#064E3B' }
         : tone === 'warning'
-          ? 'border-amber-200 bg-amber-50 text-amber-900'
-          : 'border-teal-200 bg-teal-50/80 text-teal-950';
+          ? { bg: '#FFFBEB', border: '#FDE68A', text: '#78350F' }
+          : { bg: '#F0FDFA', border: '#99F6E4', text: '#134E4A' };
   return (
-    <View className={`rounded-2xl border p-3.5 ${classes}`}>
+    <View
+      className="rounded-2xl border p-3.5"
+      style={{ backgroundColor: palette.bg, borderColor: palette.border }}
+    >
       <Text
         accessibilityRole={tone === 'error' ? 'alert' : undefined}
-        className="text-xs font-medium leading-5 text-inherit"
+        className="text-xs font-medium leading-5"
+        style={{ color: palette.text }}
       >
         {children}
       </Text>

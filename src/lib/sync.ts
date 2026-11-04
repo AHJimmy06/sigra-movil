@@ -1,3 +1,4 @@
+import { File } from 'expo-file-system';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { ApiError, api } from './api';
 import { applyAnnouncementFeed, getTickets, replacePasses, replaceServerTickets } from './db';
@@ -7,10 +8,19 @@ import { logout } from './logout';
 import { useSyncState } from '@/store/sync';
 
 let activeSync: Promise<void> | null = null;
+let pendingResync = false;
 
 export function syncAll(db: SQLiteDatabase, token: string) {
-  if (activeSync) return activeSync;
-  activeSync = runSync(db, token).finally(() => {
+  if (activeSync) {
+    pendingResync = true;
+    return activeSync;
+  }
+  activeSync = (async () => {
+    do {
+      pendingResync = false;
+      await runSync(db, token);
+    } while (pendingResync);
+  })().finally(() => {
     activeSync = null;
   });
   return activeSync;
@@ -47,14 +57,23 @@ async function uploadQueuedTickets(db: SQLiteDatabase, token: string) {
       ticket.clientRequestId,
     );
     try {
+      const file = new File(ticket.imageUri);
+      const fileName =
+        file.name ||
+        ticket.imageUri.split('/').pop() ||
+        `${ticket.clientRequestId}.jpg`;
+      const mimeType = ticket.imageType || file.type || 'image/jpeg';
+
       const form = new FormData();
       form.append('clientRequestId', ticket.clientRequestId);
       form.append('description', ticket.description);
       form.append('image', {
         uri: ticket.imageUri,
-        name: ticket.imageUri.split('/').pop() ?? `${ticket.clientRequestId}.jpg`,
-        type: ticket.imageType,
+        name: fileName,
+        type: mimeType,
+        bytes: () => file.bytes(),
       } as unknown as Blob);
+
       const response = await api.createTicket(token, form);
       await db.runAsync(
         "UPDATE tickets SET state='synced', server_id=?, error=NULL WHERE client_request_id=?",

@@ -4,8 +4,12 @@ export async function copyTicketPhoto(sourceUri: string, clientRequestId: string
   const directory = new Directory(Paths.document, 'ticket-images');
   directory.create({ idempotent: true, intermediates: true });
   const source = new File(sourceUri);
-  const extension = source.extension || '.jpg';
+  const rawExt = source.extension || '.jpg';
+  const extension = rawExt.startsWith('.') ? rawExt : `.${rawExt}`;
   const destination = new File(directory, `${clientRequestId}${extension}`);
+  if (destination.exists) {
+    destination.delete();
+  }
   await source.copy(destination);
   return destination.uri;
 }
