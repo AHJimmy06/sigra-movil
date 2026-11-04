@@ -1,3 +1,4 @@
+import { ResidentArrivals } from '@/components/ResidentArrivals';
 import { router, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
@@ -84,6 +85,7 @@ export default function HomeScreen() {
       </LargeTitle>
 
       {sync.error ? <Message tone="error">{sync.error}</Message> : null}
+      <ResidentArrivals />
 
       <View className="flex-row gap-3">
         <Pressable
@@ -221,8 +223,9 @@ export default function HomeScreen() {
               ) : undefined
             }
           >
-            Todavía no hay comunicados descargados en este dispositivo. Conéctese
-            a internet y deslice hacia abajo para actualizar la cartelera.
+            Todavía no hay comunicados descargados en este dispositivo.
+            Conéctese a internet y deslice hacia abajo para actualizar la
+            cartelera.
           </Empty>
         )}
       </View>

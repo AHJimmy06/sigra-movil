@@ -4,7 +4,7 @@ import type {
   PassQrResponse,
   Provisioning,
   ResidentAnnouncementFeedResponse,
-  ResidentUser,
+  MobileUser,
   ServerTicket,
 } from '@/types/models';
 
@@ -36,8 +36,11 @@ function formatErrorMessage(body: ErrorEnvelope, fallback: string): string {
     : (body.message ?? fallback);
 
   if (body.details && typeof body.details === 'object') {
-    const fieldMessages = Object.entries(body.details).flatMap(([field, issues]) =>
-      Array.isArray(issues) ? issues.map((issue) => `${field}: ${issue}`) : [],
+    const fieldMessages = Object.entries(body.details).flatMap(
+      ([field, issues]) =>
+        Array.isArray(issues)
+          ? issues.map((issue) => `${field}: ${issue}`)
+          : [],
     );
     if (fieldMessages.length > 0) {
       return `${baseMessage} (${fieldMessages.join('; ')})`;
@@ -46,12 +49,18 @@ function formatErrorMessage(body: ErrorEnvelope, fallback: string): string {
   return baseMessage;
 }
 
-async function request<T>(path: string, token?: string, init?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  token?: string,
+  init?: RequestInit,
+): Promise<T> {
   if (!API_URL) throw new Error('EXPO_PUBLIC_API_URL no está configurada');
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
-      ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(init?.body instanceof FormData
+        ? {}
+        : { 'Content-Type': 'application/json' }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init?.headers,
     },
@@ -70,18 +79,43 @@ async function request<T>(path: string, token?: string, init?: RequestInit): Pro
     } catch {}
     throw new ApiError(message, response.status, code, details, requestId);
   }
-  if (response.status === 204 || response.headers.get('content-length') === '0') {
+  if (
+    response.status === 204 ||
+    response.headers.get('content-length') === '0'
+  ) {
     return undefined as T;
   }
   return response.json() as Promise<T>;
 }
 
 export const api = {
-  login: (email: string, password: string) =>
-    request<{ accessToken: string; user: ResidentUser }>('/auth/login', undefined, {
+  accessPreview: (token: string, qrPayload: string) =>
+    request<import('@/types/models').AccessPreview>('/access/preview', token, {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ qrPayload }),
     }),
+  accessValidate: (
+    token: string,
+    value: import('./guard-attempt').GuardValidation,
+  ) =>
+    request<import('@/types/models').AccessResult>('/access/validate', token, {
+      method: 'POST',
+      body: JSON.stringify(value),
+    }),
+  arrivals: (token: string) =>
+    request<{ items: import('@/types/models').Arrival[] }>(
+      '/access/arrivals',
+      token,
+    ),
+  login: (email: string, password: string) =>
+    request<{ accessToken: string; user: MobileUser }>(
+      '/auth/login',
+      undefined,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      },
+    ),
   residentAnnouncements: async (
     token: string,
     cursor?: string | null,
@@ -113,7 +147,8 @@ export const api = {
     );
     return Array.isArray(res) ? res : (res.items ?? []);
   },
-  ticketDetail: (token: string, id: string) => request<ServerTicket>(`/tickets/${id}`, token),
+  ticketDetail: (token: string, id: string) =>
+    request<ServerTicket>(`/tickets/${id}`, token),
   createTicket: (token: string, form: FormData) =>
     request<{ id: string }>('/tickets', token, { method: 'POST', body: form }),
 };

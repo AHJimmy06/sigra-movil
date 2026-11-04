@@ -5,12 +5,17 @@ import {
   ProfileIcon,
   TicketIcon,
   WalletIcon,
+  Loading,
+  Screen,
 } from '@/components/ui';
 import { useSession } from '@/store/session';
 
 export default function TabsLayout() {
   const status = useSession((state) => state.status);
-  if (status === 'anonymous') return <Redirect href="/login" />;
+  const user = useSession((state) => state.user);
+  if (status === 'booting') return <Screen><Loading label="Restaurando sesión…" /></Screen>;
+  if (status !== 'authenticated' || !user) return <Redirect href="/login" />;
+  if (user.role === 'GUARD') return <Redirect href="/(guard)/scanner" />;
 
   return (
     <Tabs

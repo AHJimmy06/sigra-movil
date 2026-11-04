@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import type { Provisioning, ResidentUser } from '@/types/models';
+import type { Provisioning, MobileUser } from '@/types/models';
 
 const TOKEN_KEY = 'sigra.session.token';
 const USER_KEY = 'sigra.session.user';
@@ -7,7 +7,7 @@ const passKey = (id: string) => `sigra.pass.${id}`;
 const passQrCacheKey = (id: string) => `sigra.pass.qr.${id}`;
 
 export const secure = {
-  async saveSession(token: string, user: ResidentUser) {
+  async saveSession(token: string, user: MobileUser) {
     await Promise.all([
       SecureStore.setItemAsync(TOKEN_KEY, token),
       SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)),
@@ -19,7 +19,7 @@ export const secure = {
       SecureStore.getItemAsync(USER_KEY),
     ]);
     if (!token || !rawUser) return null;
-    return { token, user: JSON.parse(rawUser) as ResidentUser };
+    return { token, user: JSON.parse(rawUser) as MobileUser };
   },
   clearSession: () =>
     Promise.all([SecureStore.deleteItemAsync(TOKEN_KEY), SecureStore.deleteItemAsync(USER_KEY)]),

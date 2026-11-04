@@ -5,6 +5,14 @@ export type ResidentUser = {
   residentId: string;
 };
 
+export type GuardUser = {
+  sub: string;
+  email: string;
+  role: 'GUARD';
+  residentId?: null;
+};
+export type MobileUser = ResidentUser | GuardUser;
+
 export type Announcement = {
   id: string;
   title: string;
@@ -111,4 +119,27 @@ export type Provisioning = {
   digits: 6;
   period: 30;
   validUntil: string;
+};
+
+export type AccessPreview = {
+  residentId: string;
+  residentName: string;
+  unitCode: string;
+  validUntil: string;
+};
+export type AccessResult = {
+  id: string;
+  decision: 'ALLOWED' | 'DENIED';
+  reason: string;
+  direction: 'ENTRY' | 'EXIT';
+  occurredAt: string;
+  requestId: string;
+  residentName?: string;
+  unitCode?: string;
+};
+export type Arrival = {
+  id: string;
+  visitorName: string | null;
+  occurredAt: string;
+  unitCode: string;
 };

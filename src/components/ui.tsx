@@ -18,7 +18,11 @@ export type IconProps = {
   strokeWidth?: number;
 };
 
-export function HomeIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function HomeIcon({
+  size = 22,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -32,7 +36,11 @@ export function HomeIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: Icon
   );
 }
 
-export function WalletIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function WalletIcon({
+  size = 22,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect
@@ -55,7 +63,11 @@ export function WalletIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: Ic
   );
 }
 
-export function TicketIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function TicketIcon({
+  size = 22,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -69,7 +81,11 @@ export function TicketIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: Ic
   );
 }
 
-export function DirectoryIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function DirectoryIcon({
+  size = 22,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -89,7 +105,11 @@ export function DirectoryIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }:
   );
 }
 
-export function ProfileIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function ProfileIcon({
+  size = 22,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="8" r="4" stroke={color} strokeWidth={strokeWidth} />
@@ -103,7 +123,11 @@ export function ProfileIcon({ size = 22, color = '#0F172A', strokeWidth = 2 }: I
   );
 }
 
-export function SyncIcon({ size = 18, color = '#0F766E', strokeWidth = 2 }: IconProps) {
+export function SyncIcon({
+  size = 18,
+  color = '#0F766E',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -117,7 +141,11 @@ export function SyncIcon({ size = 18, color = '#0F766E', strokeWidth = 2 }: Icon
   );
 }
 
-export function CameraIcon({ size = 18, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function CameraIcon({
+  size = 18,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -132,7 +160,11 @@ export function CameraIcon({ size = 18, color = '#0F172A', strokeWidth = 2 }: Ic
   );
 }
 
-export function ImageIcon({ size = 18, color = '#0F172A', strokeWidth = 2 }: IconProps) {
+export function ImageIcon({
+  size = 18,
+  color = '#0F172A',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect
@@ -156,7 +188,11 @@ export function ImageIcon({ size = 18, color = '#0F172A', strokeWidth = 2 }: Ico
   );
 }
 
-export function PhoneIcon({ size = 18, color = '#FFFFFF', strokeWidth = 2 }: IconProps) {
+export function PhoneIcon({
+  size = 18,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -170,7 +206,11 @@ export function PhoneIcon({ size = 18, color = '#FFFFFF', strokeWidth = 2 }: Ico
   );
 }
 
-export function ShieldIcon({ size = 20, color = '#0F766E', strokeWidth = 2 }: IconProps) {
+export function ShieldIcon({
+  size = 20,
+  color = '#0F766E',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -191,7 +231,11 @@ export function ShieldIcon({ size = 20, color = '#0F766E', strokeWidth = 2 }: Ic
   );
 }
 
-export function CheckIcon({ size = 16, color = '#10B981', strokeWidth = 2.2 }: IconProps) {
+export function CheckIcon({
+  size = 16,
+  color = '#10B981',
+  strokeWidth = 2.2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -205,7 +249,11 @@ export function CheckIcon({ size = 16, color = '#10B981', strokeWidth = 2.2 }: I
   );
 }
 
-export function AlertIcon({ size = 16, color = '#F59E0B', strokeWidth = 2.2 }: IconProps) {
+export function AlertIcon({
+  size = 16,
+  color = '#F59E0B',
+  strokeWidth = 2.2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -219,7 +267,11 @@ export function AlertIcon({ size = 16, color = '#F59E0B', strokeWidth = 2.2 }: I
   );
 }
 
-export function PlusIcon({ size = 18, color = '#FFFFFF', strokeWidth = 2.2 }: IconProps) {
+export function PlusIcon({
+  size = 18,
+  color = '#FFFFFF',
+  strokeWidth = 2.2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -232,7 +284,11 @@ export function PlusIcon({ size = 18, color = '#FFFFFF', strokeWidth = 2.2 }: Ic
   );
 }
 
-export function TrashIcon({ size = 16, color = '#EF4444', strokeWidth = 2 }: IconProps) {
+export function TrashIcon({
+  size = 16,
+  color = '#EF4444',
+  strokeWidth = 2,
+}: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -412,17 +468,14 @@ export function Card({
         ? 'border-slate-200/80 bg-slate-100/90'
         : 'border-slate-200/80 bg-white shadow-sm';
   return (
-    <View className={`gap-3 rounded-3xl border p-4 ${surface}`}>{children}</View>
+    <View className={`gap-3 rounded-3xl border p-4 ${surface}`}>
+      {children}
+    </View>
   );
 }
 
 export type BadgeTone =
-  | 'neutral'
-  | 'brand'
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'dark';
+  'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'dark';
 
 export function Badge({
   label,
@@ -431,7 +484,10 @@ export function Badge({
   label: string;
   tone?: BadgeTone;
 }) {
-  const styles: Record<BadgeTone, { bg: string; border: string; text: string }> = {
+  const styles: Record<
+    BadgeTone,
+    { bg: string; border: string; text: string }
+  > = {
     neutral: { bg: '#F1F5F9', border: '#E2E8F0', text: '#334155' },
     brand: { bg: '#F0FDFA', border: '#99F6E4', text: '#115E59' },
     success: { bg: '#ECFDF5', border: '#A7F3D0', text: '#065F46' },
@@ -524,7 +580,7 @@ export function Button({
       : tone === 'secondary'
         ? '#E2E8F0'
         : tone === 'ghost'
-          ? 'transparent'
+          ? '#FFFFFF'
           : '#0F766E';
   const textColor =
     tone === 'secondary' || tone === 'ghost' ? '#0F172A' : '#FFFFFF';
@@ -537,16 +593,16 @@ export function Button({
       className="flex-row items-center justify-center gap-2 rounded-2xl px-4 py-3.5"
       style={({ pressed }) => ({
         minHeight: 46,
-        backgroundColor: bg,
+        backgroundColor: disabled ? '#CBD5E1' : bg,
         borderWidth: tone === 'ghost' ? 1 : 0,
         borderColor: '#CBD5E1',
-        opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
+        opacity: pressed && !disabled ? 0.8 : 1,
       })}
     >
       {icon}
       <Text
         className="text-center text-sm font-semibold"
-        style={{ color: textColor }}
+        style={{ color: disabled ? '#334155' : textColor }}
       >
         {title}
       </Text>
@@ -564,6 +620,16 @@ export function Field(
       <TextInput
         {...inputProps}
         accessibilityLabel={label}
+        style={[
+          {
+            minHeight: 48,
+            backgroundColor: '#F8FAFC',
+            color: '#142A43',
+            borderColor: '#CBD5E1',
+            borderWidth: 1,
+          },
+          inputProps.style,
+        ]}
         placeholderTextColor="#64748B"
         className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base text-ink"
       />
@@ -627,7 +693,9 @@ export function Empty({
   return (
     <View className="items-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white/70 px-6 py-9">
       {title ? (
-        <Text className="text-center text-base font-bold text-ink">{title}</Text>
+        <Text className="text-center text-base font-bold text-ink">
+          {title}
+        </Text>
       ) : null}
       <Text className="text-center text-sm leading-5 text-slate-600">
         {children}

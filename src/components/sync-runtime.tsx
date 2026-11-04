@@ -6,11 +6,13 @@ import { preferences } from '@/lib/preferences';
 import { syncAll } from '@/lib/sync';
 import { useSession } from '@/store/session';
 import { useSyncState } from '@/store/sync';
+import { canSyncResident } from '@/lib/session-role';
 
 export function SyncRuntime() {
   const db = useSQLiteContext();
   const token = useSession((state) => state.token);
   const status = useSession((state) => state.status);
+  const user = useSession((state) => state.user);
 
   useEffect(() => {
     useSession.getState().restore();
@@ -20,21 +22,44 @@ export function SyncRuntime() {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((net) => {
-      const connected = Boolean(net.isConnected && net.isInternetReachable !== false);
+      const connected = Boolean(
+        net.isConnected && net.isInternetReachable !== false,
+      );
       useSyncState.getState().setConnected(connected);
-      if (connected && token) void syncAll(db, token);
+      const current = useSession.getState();
+      if (
+        connected &&
+        token &&
+        current.token === token &&
+        canSyncResident(current.user, token)
+      )
+        void syncAll(db, token);
     });
     const appState = AppState.addEventListener('change', (next) => {
-      if (next === 'active' && token && useSyncState.getState().connected) void syncAll(db, token);
+      const current = useSession.getState();
+      if (
+        next === 'active' &&
+        token &&
+        current.token === token &&
+        canSyncResident(current.user, token) &&
+        useSyncState.getState().connected
+      )
+        void syncAll(db, token);
     });
     return () => {
       unsubscribe();
       appState.remove();
     };
-  }, [db, token]);
+  }, [db, token, user]);
 
   useEffect(() => {
-    if (status === 'authenticated' && token && useSyncState.getState().connected) void syncAll(db, token);
-  }, [db, status, token]);
+    if (
+      status === 'authenticated' &&
+      token &&
+      canSyncResident(user, token) &&
+      useSyncState.getState().connected
+    )
+      void syncAll(db, token);
+  }, [db, status, token, user]);
   return null;
 }

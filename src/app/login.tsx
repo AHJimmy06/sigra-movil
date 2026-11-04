@@ -12,23 +12,25 @@ import {
   ShieldIcon,
 } from '@/components/ui';
 import { useSession } from '@/store/session';
+import { homeForUser } from '@/lib/session-role';
 
 export default function LoginScreen() {
   const status = useSession((state) => state.status);
+  const user = useSession((state) => state.user);
   const login = useSession((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (status === 'authenticated') return <Redirect href="/(tabs)" />;
+  if (status === 'authenticated') return <Redirect href={homeForUser(user)} />;
 
   const submit = async () => {
     setBusy(true);
     setError(null);
     try {
       await login(email, password);
-      router.replace('/(tabs)');
+      router.replace(homeForUser(useSession.getState().user));
     } catch (value) {
       setError(
         value instanceof Error
@@ -60,7 +62,7 @@ export default function LoginScreen() {
             eyebrow="SIGRA · Ecosistema Residencial"
             subtitle="Billetera de pases QR offline, cartelera oficial y reporte de incidencias con respaldo local."
           >
-            Acceso Residente
+            Acceso SIGRA
           </LargeTitle>
         </View>
 
@@ -118,7 +120,7 @@ export default function LoginScreen() {
                 Seguridad de grado residencial
               </Text>
               <Text className="text-xs leading-5 text-slate-600">
-                Exclusivo para cuentas de residente. Su sesión JWT y las semillas
+                Acceso para residentes y guardias. Su sesión JWT y las semillas
                 criptográficas de sus pases QR se almacenan cifradas en el llavero
                 seguro del dispositivo.
               </Text>

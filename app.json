@@ -36,7 +36,14 @@
         }
       ],
       "expo-sqlite",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "recordAudioAndroid": false,
+          "cameraPermission": "Permita a SIGRA usar la cámara para escanear pases QR."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
