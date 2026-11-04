@@ -17,11 +17,11 @@ This app includes React Native MMKV, a native Nitro Module. **Expo Go is not suf
 cp .env.example .env
 ```
 
-Set `EXPO_PUBLIC_API_URL` to the API `/api` base URL:
+Set `EXPO_PUBLIC_API_URL` to the API `/api` base URL. The Android emulator default is `http://10.0.2.2:3300/api`:
 
-- Android emulator: `http://10.0.2.2:3000/api`
-- iOS simulator: `http://localhost:3000/api`
-- Physical device: `http://<your-computer-LAN-IP>:3000/api`; the phone and computer must share a network, the API must listen on a reachable interface, and the firewall must allow the port.
+- Android emulator: `http://10.0.2.2:3300/api`
+- iOS simulator: `http://localhost:3300/api`
+- Physical device: `http://<your-computer-LAN-IP>:3300/api`; the phone and computer must share a network, the API must listen on a reachable interface, and the firewall must allow the port.
 - Production: use `https://.../api`. Plain HTTP is only for isolated local development.
 
 `localhost` on a physical phone refers to the phone, not the development computer.
@@ -31,7 +31,7 @@ Set `EXPO_PUBLIC_API_URL` to the API `/api` base URL:
 ```bash
 npm install
 npx expo prebuild
-npx expo run:android
+npm run android
 ```
 
 On macOS with Xcode, use `npx expo run:ios`. For an EAS development build:
@@ -40,7 +40,7 @@ On macOS with Xcode, use `npx expo run:ios`. For an EAS development build:
 npm install -g eas-cli
 eas build:configure
 eas build --profile development --platform android
-npx expo start --dev-client
+npm run start -- --dev-client
 ```
 
 Rebuild the development client after adding or changing native modules.
