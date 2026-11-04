@@ -1,18 +1,54 @@
-import type { Announcement, Pass, Provisioning, ResidentUser, ServerTicket } from '@/types/models';
+import type {
+  Announcement,
+  PaginatedTicketsResponse,
+  Pass,
+  PassQrResponse,
+  Provisioning,
+  ResidentAnnouncementFeedResponse,
+  ResidentUser,
+  ServerTicket,
+} from '@/types/models';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+
+type ErrorEnvelope = {
+  code?: string;
+  message?: string | string[];
+  requestId?: string;
+  details?: Record<string, string[]>;
+};
 
 export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly code?: string,
+    readonly details?: Record<string, string[]>,
+    readonly requestId?: string,
   ) {
     super(message);
+    this.name = 'ApiError';
   }
 }
 
+function formatErrorMessage(body: ErrorEnvelope, fallback: string): string {
+  const baseMessage = Array.isArray(body.message)
+    ? body.message.join(', ')
+    : (body.message ?? fallback);
+
+  if (body.details && typeof body.details === 'object') {
+    const fieldMessages = Object.entries(body.details).flatMap(([field, issues]) =>
+      Array.isArray(issues) ? issues.map((issue) => `${field}: ${issue}`) : [],
+    );
+    if (fieldMessages.length > 0) {
+      return `${baseMessage} (${fieldMessages.join('; ')})`;
+    }
+  }
+  return baseMessage;
+}
+
 async function request<T>(path: string, token?: string, init?: RequestInit): Promise<T> {
-  if (!API_URL) throw new Error('EXPO_PUBLIC_API_URL is not configured');
+  if (!API_URL) throw new Error('EXPO_PUBLIC_API_URL no está configurada');
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
@@ -22,14 +58,22 @@ async function request<T>(path: string, token?: string, init?: RequestInit): Pro
     },
   });
   if (!response.ok) {
-    let message = `Request failed (${response.status})`;
+    let message = `Error de solicitud (${response.status})`;
+    let code: string | undefined;
+    let details: Record<string, string[]> | undefined;
+    let requestId: string | undefined;
     try {
-      const body = (await response.json()) as { message?: string | string[] };
-      message = Array.isArray(body.message) ? body.message.join(', ') : (body.message ?? message);
+      const body = (await response.json()) as ErrorEnvelope;
+      code = body.code;
+      details = body.details;
+      requestId = body.requestId;
+      message = formatErrorMessage(body, message);
     } catch {}
-    throw new ApiError(message, response.status);
+    throw new ApiError(message, response.status, code, details, requestId);
   }
-  if (response.status === 204 || response.headers.get('content-length') === '0') return undefined as T;
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return undefined as T;
+  }
   return response.json() as Promise<T>;
 }
 
@@ -40,6 +84,41 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
   announcements: (token: string) => request<Announcement[]>('/announcements/published', token),
+  residentAnnouncements: async (
+    token: string,
+    cursor?: string | null,
+    limit = 100,
+  ): Promise<ResidentAnnouncementFeedResponse> => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.set('cursor', cursor);
+    try {
+      return await request<ResidentAnnouncementFeedResponse>(
+        `/resident/announcements?${params.toString()}`,
+        token,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        const published = await request<Announcement[]>('/announcements/published', token);
+        const now = new Date().toISOString();
+        return {
+          items: published.map((item) => ({
+            kind: 'UPSERT' as const,
+            announcementId: item.id,
+            title: item.title,
+            body: item.body,
+            publishedAt: item.publishedAt,
+            author: item.authorName ? { name: item.authorName } : null,
+            occurredAt: item.publishedAt,
+          })),
+          checkpoint: null,
+          hasMore: false,
+          nextCursor: null,
+          syncedAt: now,
+        };
+      }
+      throw error;
+    }
+  },
   passes: (token: string) => request<Pass[]>('/access/passes', token),
   createPass: (token: string, validDays: number) =>
     request<Pass>('/access/passes', token, {
@@ -48,9 +127,15 @@ export const api = {
     }),
   revokePass: (token: string, id: string) =>
     request<void>(`/access/passes/${id}/revoke`, token, { method: 'POST' }),
+  passQr: (token: string, id: string) =>
+    request<PassQrResponse>(`/access/passes/${id}/qr`, token),
   provisionPass: (token: string, id: string) =>
     request<Provisioning>(`/access/passes/${id}/provision`, token),
-  tickets: (token: string) => request<ServerTicket[]>('/tickets', token),
+  tickets: async (token: string): Promise<ServerTicket[]> => {
+    const res = await request<PaginatedTicketsResponse | ServerTicket[]>('/tickets', token);
+    return Array.isArray(res) ? res : (res.items ?? []);
+  },
+  ticketDetail: (token: string, id: string) => request<ServerTicket>(`/tickets/${id}`, token),
   createTicket: (token: string, form: FormData) =>
     request<{ id: string }>('/tickets', token, { method: 'POST', body: form }),
 };

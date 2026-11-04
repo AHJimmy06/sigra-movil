@@ -14,7 +14,10 @@ type SessionState = {
 };
 
 export const useSession = create<SessionState>((set) => ({
-  status: 'booting', token: null, user: null, error: null,
+  status: 'booting',
+  token: null,
+  user: null,
+  error: null,
   async restore() {
     try {
       const session = await secure.loadSession();
@@ -25,14 +28,19 @@ export const useSession = create<SessionState>((set) => ({
       }
       set({ status: 'authenticated', ...session });
     } catch {
-      set({ status: 'anonymous', token: null, user: null, error: 'Could not restore the secure session.' });
+      set({
+        status: 'anonymous',
+        token: null,
+        user: null,
+        error: 'No se pudo restaurar la sesión segura del dispositivo.',
+      });
     }
   },
   async login(email, password) {
     set({ error: null });
     const result = await api.login(email.trim().toLowerCase(), password);
     if (result.user.role !== 'RESIDENT' || !result.user.residentId) {
-      throw new Error('This app is available only to resident accounts.');
+      throw new Error('Esta aplicación móvil es de uso exclusivo para cuentas de residentes.');
     }
     await secure.saveSession(result.accessToken, result.user);
     set({ status: 'authenticated', token: result.accessToken, user: result.user, error: null });

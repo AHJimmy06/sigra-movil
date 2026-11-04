@@ -1,8 +1,16 @@
-import { mapAnnouncement, mergeTicketCaches } from './db';
+import type { SQLiteDatabase } from 'expo-sqlite';
+import { applyAnnouncementFeed, mapAnnouncement, mergeTicketCaches } from './db';
 
 describe('SQLite mapping', () => {
   it('normalizes server dates without changing public content', () => {
-    expect(mapAnnouncement({ id: 'a-1', title: 'Water service', body: 'Planned interruption', publishedAt: '2026-08-25T10:00:00-05:00' })).toEqual({
+    expect(
+      mapAnnouncement({
+        id: 'a-1',
+        title: 'Water service',
+        body: 'Planned interruption',
+        publishedAt: '2026-08-25T10:00:00-05:00',
+      }),
+    ).toEqual({
       id: 'a-1',
       title: 'Water service',
       body: 'Planned interruption',
@@ -10,14 +18,69 @@ describe('SQLite mapping', () => {
     });
   });
 
+  it('applies UPSERT and TOMBSTONE items from the incremental announcement feed', async () => {
+    const executed: { sql: string; args: unknown[] }[] = [];
+    const mockDb = {
+      withTransactionAsync: async (fn: () => Promise<void>) => {
+        await fn();
+      },
+      runAsync: async (sql: string, ...args: unknown[]) => {
+        executed.push({ sql, args });
+      },
+    } as unknown as SQLiteDatabase;
+
+    await applyAnnouncementFeed(mockDb, [
+      {
+        kind: 'UPSERT',
+        announcementId: 'ann-1',
+        title: 'Mantenimiento de cisterna',
+        body: 'Corte programado de 09:00 a 12:00.',
+        publishedAt: '2026-08-25T10:00:00-05:00',
+        author: { name: 'Administración Central' },
+        occurredAt: '2026-08-25T15:00:00.000Z',
+      },
+      {
+        kind: 'TOMBSTONE',
+        announcementId: 'ann-old',
+        occurredAt: '2026-08-25T16:00:00.000Z',
+      },
+    ]);
+
+    expect(executed).toHaveLength(2);
+    expect(executed[0]?.args).toEqual([
+      'ann-1',
+      'Mantenimiento de cisterna',
+      'Corte programado de 09:00 a 12:00.',
+      '2026-08-25T15:00:00.000Z',
+      'Administración Central',
+    ]);
+    expect(executed[1]).toEqual({
+      sql: 'DELETE FROM announcements WHERE id = ?',
+      args: ['ann-old'],
+    });
+  });
+
   it('keeps local submission state while merging authoritative ticket status', () => {
     const local = {
-      clientRequestId: 'request-1', description: 'Water leak', imageUri: 'file:///ticket.jpg', imageType: 'image/jpeg',
-      state: 'failed' as const, serverId: null, serverStatus: null, error: 'Timed out', createdAt: '2026-08-25T00:00:00.000Z',
+      clientRequestId: 'request-1',
+      description: 'Water leak',
+      imageUri: 'file:///ticket.jpg',
+      imageType: 'image/jpeg',
+      state: 'failed' as const,
+      serverId: null,
+      serverStatus: null,
+      error: 'Timed out',
+      createdAt: '2026-08-25T00:00:00.000Z',
     };
     const server = {
-      id: 'ticket-1', clientRequestId: 'request-1', residentId: 'resident-1', description: 'Water leak', imageName: 'ticket.jpg',
-      status: 'IN_PROGRESS' as const, createdAt: '2026-08-25T00:00:00.000Z', updatedAt: '2026-08-25T01:00:00.000Z',
+      id: 'ticket-1',
+      clientRequestId: 'request-1',
+      residentId: 'resident-1',
+      description: 'Water leak',
+      imageName: 'ticket.jpg',
+      status: 'IN_PROGRESS' as const,
+      createdAt: '2026-08-25T00:00:00.000Z',
+      updatedAt: '2026-08-25T01:00:00.000Z',
     };
 
     expect(mergeTicketCaches([local], [server])).toEqual([
@@ -27,13 +90,28 @@ describe('SQLite mapping', () => {
 
   it('includes authoritative tickets absent from the local submission queue', () => {
     const server = {
-      id: 'ticket-2', clientRequestId: 'request-2', residentId: 'resident-1', description: 'Broken light', imageName: 'light.jpg',
-      status: 'OPEN' as const, createdAt: '2026-08-26T00:00:00.000Z', updatedAt: '2026-08-26T00:00:00.000Z',
+      id: 'ticket-2',
+      clientRequestId: 'request-2',
+      residentId: 'resident-1',
+      description: 'Broken light',
+      imageName: 'light.jpg',
+      status: 'OPEN' as const,
+      createdAt: '2026-08-26T00:00:00.000Z',
+      updatedAt: '2026-08-26T00:00:00.000Z',
     };
 
-    expect(mergeTicketCaches([], [server])).toEqual([{
-      clientRequestId: 'request-2', description: 'Broken light', imageUri: '', imageType: '', state: 'synced',
-      serverId: 'ticket-2', serverStatus: 'OPEN', error: null, createdAt: '2026-08-26T00:00:00.000Z',
-    }]);
+    expect(mergeTicketCaches([], [server])).toEqual([
+      {
+        clientRequestId: 'request-2',
+        description: 'Broken light',
+        imageUri: '',
+        imageType: '',
+        state: 'synced',
+        serverId: 'ticket-2',
+        serverStatus: 'OPEN',
+        error: null,
+        createdAt: '2026-08-26T00:00:00.000Z',
+      },
+    ]);
   });
 });

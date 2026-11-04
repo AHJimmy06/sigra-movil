@@ -4,6 +4,7 @@ import type { Provisioning, ResidentUser } from '@/types/models';
 const TOKEN_KEY = 'sigra.session.token';
 const USER_KEY = 'sigra.session.user';
 const passKey = (id: string) => `sigra.pass.${id}`;
+const passQrCacheKey = (id: string) => `sigra.pass.qr.${id}`;
 
 export const secure = {
   async saveSession(token: string, user: ResidentUser) {
@@ -27,5 +28,13 @@ export const secure = {
     const value = await SecureStore.getItemAsync(passKey(id));
     return value ? (JSON.parse(value) as Provisioning) : null;
   },
-  deletePass: (id: string) => SecureStore.deleteItemAsync(passKey(id)),
+  saveCachedQrPayload: (passId: string, payload: string) =>
+    SecureStore.setItemAsync(passQrCacheKey(passId), payload),
+  getCachedQrPayload: (passId: string) => SecureStore.getItemAsync(passQrCacheKey(passId)),
+  deletePass: async (id: string) => {
+    await Promise.all([
+      SecureStore.deleteItemAsync(passKey(id)),
+      SecureStore.deleteItemAsync(passQrCacheKey(id)),
+    ]);
+  },
 };
